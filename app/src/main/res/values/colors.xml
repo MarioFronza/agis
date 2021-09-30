@@ -3,9 +3,16 @@
     <color name="blue_200">#35306f</color>
     <color name="blue_500">#010a43</color>
     <color name="blue_700">#00001e</color>
+    <color name="adapter_blue_light">#192259</color>
+    <color name="adapter_blue_dark">#10194E</color>
+    <color name="button_blue">#212A6B</color>
     <color name="pink_200">#ff6c90</color>
     <color name="pink_500">#ff2e63</color>
     <color name="pink_700">#c5003a</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="text_color">#858EC5</color>
+    <color name="approved_status">#1DC7AC</color>
+    <color name="attending_status">#FAAD39</color>
+    <color name="reproved_color">#FE4A54</color>
 </resources>
