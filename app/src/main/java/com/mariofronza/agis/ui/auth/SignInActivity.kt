@@ -44,6 +44,17 @@ class SignInActivity : AppCompatActivity() {
         btnSignIn.setOnClickListener {
             validateFields()
         }
+
+        tvCreateAccount.setOnClickListener {
+            goToSignUpActivity()
+        }
+
+    }
+
+    private fun goToSignUpActivity() {
+        Intent(this, SignUpActivity::class.java).also {
+            startActivity(it)
+        }
     }
 
     private fun validateFields() {

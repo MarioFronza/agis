@@ -27,6 +27,10 @@
     <string name="todo">TODO</string>
     <string name="enrollment_field">Matrícula</string>
     <string name="already_login">Já tenho login</string>
+    <string name="siga_password_text">Senha Siga</string>
+    <string name="create_account_text">Criar conta</string>
+    <string name="siga_cpf_text">CPF Siga</string>
+    <string name="already_has_account_text">Já tenho conta</string>
     <string-array name="planets_array">
         <item>2021/2</item>
         <item>2021/1</item>
