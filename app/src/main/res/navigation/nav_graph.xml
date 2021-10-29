@@ -20,4 +20,14 @@
         android:name="com.mariofronza.agis.ui.dashboard.DashboardFragment"
         android:label="fragment_dashboard"
         tools:layout="@layout/fragment_dashboard" />
+    <fragment
+        android:id="@+id/awaitFragment"
+        android:name="com.mariofronza.agis.ui.retrieve.RetrieveActivity"
+        android:label="fragment_await"
+        tools:layout="@layout/activity_await" />
+    <activity
+        android:id="@+id/signUpActivity"
+        android:name="com.mariofronza.agis.ui.auth.SignUpActivity"
+        android:label="activity_sign_up"
+        tools:layout="@layout/activity_sign_up" />
 </navigation>

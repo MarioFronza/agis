@@ -40,7 +40,6 @@ class SignInActivity : AppCompatActivity() {
             signInFail(message)
         })
 
-
         btnSignIn.setOnClickListener {
             validateFields()
         }

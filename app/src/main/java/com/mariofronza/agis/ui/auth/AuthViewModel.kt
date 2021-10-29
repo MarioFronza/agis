@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import com.mariofronza.agis.data.SessionRepository
 import com.mariofronza.agis.models.SessionRequest
 import com.mariofronza.agis.models.SessionResponse
+import com.mariofronza.agis.models.User
+import com.mariofronza.agis.models.UserRequest
 import com.mariofronza.agis.utils.RequestErrorFormatter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,11 +18,15 @@ class AuthViewModel(
 ) : ViewModel() {
 
     private var _session = MutableLiveData<SessionResponse>()
+    private var _user = MutableLiveData<User>()
     private var _error = MutableLiveData<String>()
-
 
     val session: LiveData<SessionResponse>
         get() = _session
+
+    val user: LiveData<User>
+        get() = _user
+
 
     val error: LiveData<String>
         get() = _error
@@ -31,6 +37,20 @@ class AuthViewModel(
             val response = sessionRepository.createSession(sessionRequest)
             if (response.isSuccessful) {
                 _session.value = response.body()
+            } else {
+                val errorMessage =
+                    RequestErrorFormatter.formatErrorBody(response.errorBody()!!.string())
+                _error.value = errorMessage
+            }
+        }
+    }
+
+
+    fun signUp(userRequest: UserRequest) {
+        CoroutineScope(Dispatchers.Main).launch {
+            val response = sessionRepository.createUser(userRequest)
+            if (response.isSuccessful) {
+                _user.value = response.body()
             } else {
                 val errorMessage =
                     RequestErrorFormatter.formatErrorBody(response.errorBody()!!.string())

@@ -19,6 +19,9 @@
             android:name=".ui.auth.SignInActivity"
             android:exported="true" />
         <activity
+            android:name=".ui.retrieve.RetrieveActivity"
+            android:exported="true" />
+        <activity
             android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
