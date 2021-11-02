@@ -3,6 +3,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'kotlin-android-extensions'
+    id 'com.onesignal.androidsdk.onesignal-gradle-plugin'
 }
 
 android {
@@ -59,6 +60,9 @@ dependencies {
 
     //PowerSpinner
     implementation 'com.github.skydoves:powerspinner:1.1.9'
+
+    //OneSignal
+    implementation 'com.onesignal:OneSignal:[4.0.0, 4.99.99]'
 
     testImplementation 'junit:junit:4.13.2'
 
