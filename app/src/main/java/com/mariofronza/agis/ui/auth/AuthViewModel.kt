@@ -9,9 +9,16 @@ import com.mariofronza.agis.models.SessionResponse
 import com.mariofronza.agis.models.User
 import com.mariofronza.agis.models.UserRequest
 import com.mariofronza.agis.utils.RequestErrorFormatter
+import com.onesignal.OneSignal
+import com.onesignal.OneSignal.ExternalIdError
+import com.onesignal.OneSignal.OSExternalUserIdUpdateCompletionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.json.JSONException
+
+import org.json.JSONObject
+
 
 class AuthViewModel(
     private val sessionRepository: SessionRepository
@@ -51,12 +58,38 @@ class AuthViewModel(
             val response = sessionRepository.createUser(userRequest)
             if (response.isSuccessful) {
                 _user.value = response.body()
+                val externalUserId = _user.value?.id
+                setOneSignalExternalUserId(externalUserId.toString())
             } else {
                 val errorMessage =
                     RequestErrorFormatter.formatErrorBody(response.errorBody()!!.string())
                 _error.value = errorMessage
             }
         }
+    }
+
+    private fun setOneSignalExternalUserId(externalUserId: String) {
+        OneSignal.setExternalUserId(
+            externalUserId,
+            object : OSExternalUserIdUpdateCompletionHandler {
+                override fun onSuccess(results: JSONObject) {
+                    try {
+                        OneSignal.onesignalLog(
+                            OneSignal.LOG_LEVEL.VERBOSE,
+                            "Set external user id successfully"
+                        )
+                    } catch (e: JSONException) {
+                        e.printStackTrace()
+                    }
+                }
+
+                override fun onFailure(error: ExternalIdError) {
+                    OneSignal.onesignalLog(
+                        OneSignal.LOG_LEVEL.VERBOSE,
+                        "Set external user id done with error: $error"
+                    )
+                }
+            })
     }
 
 }

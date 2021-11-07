@@ -24,7 +24,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_marginStart="16dp"
-        android:text="Olá, Mário"
         android:textColor="@color/white"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="@+id/tvUserDashboard"
@@ -40,7 +39,7 @@
         android:layout_marginEnd="24dp"
         android:backgroundTint="@color/pink_500"
         android:text="Sincronizar"
-        app:layout_constraintEnd_toStartOf="@+id/powerSpinnerView2"
+        app:layout_constraintEnd_toStartOf="@+id/powerSpinner"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintStart_toStartOf="parent"
@@ -58,7 +57,7 @@
         app:layout_constraintTop_toBottomOf="@+id/btnSyncDashboard" />
 
     <com.skydoves.powerspinner.PowerSpinnerView
-        android:id="@+id/powerSpinnerView2"
+        android:id="@+id/powerSpinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
@@ -78,7 +77,6 @@
         app:spinner_divider_color="@color/text_color"
         app:spinner_divider_show="true"
         app:spinner_divider_size="0.4dp"
-        app:spinner_item_array="@array/planets_array"
         app:spinner_popup_animation="dropdown"
         app:spinner_popup_background="@color/blue_200"
         app:spinner_popup_elevation="14dp" />

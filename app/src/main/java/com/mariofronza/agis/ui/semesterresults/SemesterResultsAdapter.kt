@@ -66,7 +66,7 @@ class SemesterResultsAdapter(
                     R.color.attending_status
                 )
             )
-            "Reprovado" -> ColorStateList.valueOf(
+            "Reprovado Nota" -> ColorStateList.valueOf(
                 ContextCompat.getColor(
                     context,
                     R.color.reproved_color

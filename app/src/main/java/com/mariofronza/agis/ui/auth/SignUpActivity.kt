@@ -9,8 +9,11 @@ import androidx.lifecycle.ViewModelProvider
 import com.mariofronza.agis.R
 import com.mariofronza.agis.api.ApiService
 import com.mariofronza.agis.data.SessionRepository
+import com.mariofronza.agis.models.SessionRequest
+import com.mariofronza.agis.models.SessionResponse
 import com.mariofronza.agis.models.SigaCredential
 import com.mariofronza.agis.models.UserRequest
+import com.mariofronza.agis.ui.MainActivity
 import com.mariofronza.agis.ui.retrieve.RetrieveActivity
 import com.mariofronza.agis.utils.SessionManager
 import kotlinx.android.synthetic.main.activity_sign_up.*
@@ -20,6 +23,8 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var sessionManager: SessionManager
     private lateinit var factory: AuthViewModelFactory
     private lateinit var viewModel: AuthViewModel
+
+    private lateinit var password: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,8 +39,13 @@ class SignUpActivity : AppCompatActivity() {
 
 
         viewModel.user.observe(this, Observer {
-            goToAwaitFragment()
+            signIn(it.email, password)
         })
+
+        viewModel.session.observe(this, Observer { sessionResponse ->
+            signInSuccess(sessionResponse)
+        })
+
 
         viewModel.error.observe(this, Observer { message ->
             signUpFail(message)
@@ -53,7 +63,7 @@ class SignUpActivity : AppCompatActivity() {
 
     private fun validateFields() {
         val email = etEmailSignUp.text.toString()
-        val password = etPasswordSignUp.text.toString()
+        password = etPasswordSignUp.text.toString()
         val sigaCpf = etCpfSignUp.text.toString()
         val sigaPassword = etSigaPasswordSignUp.text.toString()
 
@@ -77,15 +87,22 @@ class SignUpActivity : AppCompatActivity() {
         viewModel.signUp(userRequest)
     }
 
+    private fun signIn(email: String, password: String) {
+        val session = SessionRequest(email, password)
+        viewModel.singIn(session)
+    }
+
     private fun signUpFail(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
 
-    private fun goToAwaitFragment() {
+    private fun signInSuccess(sessionResponse: SessionResponse) {
+        sessionManager.saveAccessToken(sessionResponse.token)
         Intent(this, RetrieveActivity::class.java).also {
             startActivity(it)
         }
+        finish()
     }
 
     private fun goToSignInActivity() {

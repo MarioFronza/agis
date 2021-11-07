@@ -26,7 +26,7 @@ class RetrieveActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_sign_in)
+        setContentView(R.layout.activity_await)
 
         val api = ApiService()
         val retrieveRepository = RetrieveRepository(api)
@@ -35,7 +35,7 @@ class RetrieveActivity : AppCompatActivity() {
         factory = RetrieveViewModelFactory(retrieveRepository)
         viewModel = ViewModelProvider(this, factory).get(RetrieveViewModel::class.java)
 
-        viewModel.retrieveResult.observe(this, Observer { sessionResponse ->
+        viewModel.retrieveResult.observe(this, Observer {
             goToMainActivity()
         })
 
@@ -47,7 +47,9 @@ class RetrieveActivity : AppCompatActivity() {
     }
 
     private fun startRetrieve() {
-        viewModel.retrieve()
+        sessionManager.fetchAccessToken()?.let {
+            viewModel.retrieve(it)
+        }
     }
 
     private fun goToMainActivity() {
@@ -58,6 +60,7 @@ class RetrieveActivity : AppCompatActivity() {
 
     private fun retrieveFail(message: String?) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        finish()
     }
 
 }

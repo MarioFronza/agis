@@ -6,6 +6,6 @@ class RetrieveRepository(
     private val api: ApiService
 ) {
 
-    suspend fun startRetrieve() = api.retrieve()
+    suspend fun startRetrieve(token: String) = api.fullRetrieve("Bearer $token")
 
 }
