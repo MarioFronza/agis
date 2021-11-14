@@ -30,6 +30,9 @@ interface ApiService {
     @POST("sessions")
     suspend fun createSession(@Body request: SessionRequest): Response<SessionResponse>
 
+    @POST("auth/refresh-token")
+    suspend fun refreshSession(@Header("Authorization") token: String): Response<SessionResponse>
+
     @POST("users")
     suspend fun createUser(@Body request: UserRequest): Response<User>
 

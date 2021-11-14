@@ -13,7 +13,6 @@ import com.mariofronza.agis.models.SessionRequest
 import com.mariofronza.agis.models.SessionResponse
 import com.mariofronza.agis.models.SigaCredential
 import com.mariofronza.agis.models.UserRequest
-import com.mariofronza.agis.ui.MainActivity
 import com.mariofronza.agis.ui.retrieve.RetrieveActivity
 import com.mariofronza.agis.utils.SessionManager
 import kotlinx.android.synthetic.main.activity_sign_up.*
@@ -76,6 +75,7 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun signUp(email: String, password: String, sigaCpf: String, sigaPassword: String) {
+        btnSignUp.startAnimation()
         val userRequest = UserRequest(
             email = email,
             password = password,
@@ -98,10 +98,13 @@ class SignUpActivity : AppCompatActivity() {
 
 
     private fun signInSuccess(sessionResponse: SessionResponse) {
-        sessionManager.saveAccessToken(sessionResponse.token)
+        sessionManager.saveAccessToken(sessionResponse.accessToken)
+        sessionManager.saveRefreshToken(sessionResponse.refreshToken)
+        sessionManager.saveUserId(sessionResponse.userId)
         Intent(this, RetrieveActivity::class.java).also {
             startActivity(it)
         }
+        btnSignUp.revertAnimation()
         finish()
     }
 

@@ -37,7 +37,10 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="24dp"
+        android:allowClickWhenDisabled="true"
         android:backgroundTint="@color/pink_500"
+
+        android:textColor="@color/white"
         android:text="Sincronizar"
         app:layout_constraintEnd_toStartOf="@+id/powerSpinner"
         app:layout_constraintHorizontal_bias="0.5"
@@ -81,14 +84,14 @@
         app:spinner_popup_background="@color/blue_200"
         app:spinner_popup_elevation="14dp" />
 
-    <ImageButton
-        android:id="@+id/imageButton"
+    <br.com.simplepass.loadingbutton.customViews.CircularProgressImageButton
+        android:id="@+id/btnSignOut"
         android:layout_width="48dp"
         android:layout_height="50dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:background="@drawable/btn_border_shape_blue"
-        android:src="@drawable/ic_baseline_notifications_none_24"
+        android:src="@drawable/ic_baseline_exit_to_app_24"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

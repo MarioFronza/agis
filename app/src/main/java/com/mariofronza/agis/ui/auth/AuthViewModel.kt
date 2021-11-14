@@ -1,5 +1,6 @@
 package com.mariofronza.agis.ui.auth
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,7 +16,6 @@ import com.onesignal.OneSignal.OSExternalUserIdUpdateCompletionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.json.JSONException
 
 import org.json.JSONObject
 
@@ -43,7 +43,8 @@ class AuthViewModel(
         CoroutineScope(Dispatchers.Main).launch {
             val response = sessionRepository.createSession(sessionRequest)
             if (response.isSuccessful) {
-                _session.value = response.body()
+                val externalUserId = _session.value?.userId
+                setOneSignalExternalUserId(externalUserId.toString(), response.body()!!)
             } else {
                 val errorMessage =
                     RequestErrorFormatter.formatErrorBody(response.errorBody()!!.string())
@@ -52,14 +53,26 @@ class AuthViewModel(
         }
     }
 
+    fun refreshToken(refreshToken: String) {
+        CoroutineScope(Dispatchers.Main).launch {
+            val response = sessionRepository.refreshToken(refreshToken)
+            if (response.isSuccessful) {
+                Log.i("REFRESH_TOKEN", response.body().toString())
+                _session.value = response.body()
+            } else {
+                val errorMessage =
+                    RequestErrorFormatter.formatErrorBody(response.errorBody()!!.string())
+                Log.i("REFRESH_TOKEN", errorMessage)
+                _error.value = errorMessage
+            }
+        }
+    }
 
     fun signUp(userRequest: UserRequest) {
         CoroutineScope(Dispatchers.Main).launch {
             val response = sessionRepository.createUser(userRequest)
             if (response.isSuccessful) {
                 _user.value = response.body()
-                val externalUserId = _user.value?.id
-                setOneSignalExternalUserId(externalUserId.toString())
             } else {
                 val errorMessage =
                     RequestErrorFormatter.formatErrorBody(response.errorBody()!!.string())
@@ -68,19 +81,12 @@ class AuthViewModel(
         }
     }
 
-    private fun setOneSignalExternalUserId(externalUserId: String) {
+    private fun setOneSignalExternalUserId(externalUserId: String, body: SessionResponse) {
         OneSignal.setExternalUserId(
             externalUserId,
             object : OSExternalUserIdUpdateCompletionHandler {
                 override fun onSuccess(results: JSONObject) {
-                    try {
-                        OneSignal.onesignalLog(
-                            OneSignal.LOG_LEVEL.VERBOSE,
-                            "Set external user id successfully"
-                        )
-                    } catch (e: JSONException) {
-                        e.printStackTrace()
-                    }
+                    _session.value = body
                 }
 
                 override fun onFailure(error: ExternalIdError) {

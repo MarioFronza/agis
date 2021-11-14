@@ -68,15 +68,18 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun signIn(email: String, password: String) {
+        btnSignIn.startAnimation()
         val session = SessionRequest(email, password)
         viewModel.singIn(session)
     }
 
     private fun signInSuccess(sessionResponse: SessionResponse) {
-        sessionManager.saveAccessToken(sessionResponse.token)
+        sessionManager.saveAccessToken(sessionResponse.accessToken)
+        sessionManager.saveRefreshToken(sessionResponse.refreshToken)
         Intent(this, MainActivity::class.java).also {
             startActivity(it)
         }
+        btnSignIn.revertAnimation()
         finish()
     }
 

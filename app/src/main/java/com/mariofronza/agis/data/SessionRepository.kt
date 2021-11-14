@@ -10,6 +10,8 @@ class SessionRepository(
 
     suspend fun createSession(sessionRequest: SessionRequest) = api.createSession(sessionRequest)
 
+    suspend fun refreshToken(refreshToken: String) = api.refreshSession("Bearer $refreshToken")
+
     suspend fun createUser(userRequest: UserRequest) = api.createUser(userRequest)
 
 }
