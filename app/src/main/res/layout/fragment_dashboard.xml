@@ -23,34 +23,31 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="8dp"
         android:textColor="@color/white"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="@+id/tvUserDashboard"
         app:layout_constraintStart_toEndOf="@+id/tvUserDashboard"
         app:layout_constraintTop_toTopOf="@+id/tvUserDashboard" />
 
-    <Button
+    <br.com.simplepass.loadingbutton.customViews.CircularProgressButton
         android:id="@+id/btnSyncDashboard"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="24dp"
-        android:allowClickWhenDisabled="true"
-        android:backgroundTint="@color/pink_500"
-
+        android:layout_marginTop="24dp"
+        android:background="@drawable/background_button"
+        android:paddingStart="15dp"
+        android:paddingEnd="15dp"
+        android:text="@string/sync"
         android:textColor="@color/white"
-        android:text="Sincronizar"
-        app:layout_constraintEnd_toStartOf="@+id/powerSpinner"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintBottom_toBottomOf="@+id/powerSpinner"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvUserDashboard" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvSemesterResults"
-        android:layout_width="0dp"
+        android:layout_width="411dp"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
         android:textColor="#FF0000"
@@ -63,6 +60,7 @@
         android:id="@+id/powerSpinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:gravity="center"
         android:hint="Período"
@@ -72,9 +70,7 @@
         android:textSize="16sp"
         app:cornerRadius="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/btnSyncDashboard"
-        app:layout_constraintTop_toTopOf="@+id/btnSyncDashboard"
+        app:layout_constraintTop_toBottomOf="@+id/tvUserDashboard"
         app:spinner_arrow_gravity="end"
         app:spinner_arrow_padding="8dp"
         app:spinner_divider_color="@color/text_color"
@@ -94,4 +90,25 @@
         android:src="@drawable/ic_baseline_exit_to_app_24"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <br.com.simplepass.loadingbutton.customViews.CircularProgressImageButton
+        android:id="@+id/btnNotification"
+        android:layout_width="48dp"
+        android:layout_height="50dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/btn_border_shape_blue"
+        android:src="@drawable/ic_baseline_notifications_24"
+        app:layout_constraintBottom_toBottomOf="@+id/btnSignOut"
+        app:layout_constraintEnd_toStartOf="@+id/btnSignOut"
+        app:layout_constraintTop_toTopOf="@+id/btnSignOut" />
+
+    <ProgressBar
+        android:id="@+id/pbListLoading"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/rvSemesterResults"
+        app:layout_constraintStart_toStartOf="@+id/rvSemesterResults"
+        app:layout_constraintTop_toTopOf="@+id/rvSemesterResults" />
 </androidx.constraintlayout.widget.ConstraintLayout>
