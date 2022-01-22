@@ -2,14 +2,17 @@ package com.mariofronza.agis.ui.dashboard
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.opengl.Visibility
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.RotateAnimation
 import android.widget.ImageButton
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -38,6 +41,7 @@ class DashboardFragment : Fragment() {
     private lateinit var powerSpinner: PowerSpinnerView
     private lateinit var dashboardViewModel: DashboardViewModel
     private lateinit var dashboardViewModelFactory: DashboardViewModelFactory
+    private lateinit var pbListLoading: ProgressBar
 
     private val semesterResults = mutableListOf<SemesterResult>()
 
@@ -54,6 +58,7 @@ class DashboardFragment : Fragment() {
         rvSemesterResults = view.findViewById(R.id.rvSemesterResults) as RecyclerView
         btnSignOut = view.findViewById(R.id.btnSignOut) as CircularProgressImageButton
         powerSpinner = view.findViewById(R.id.powerSpinner) as PowerSpinnerView
+        pbListLoading = view.findViewById(R.id.pbListLoading) as ProgressBar
 
         sessionManager = SessionManager(requireActivity())
         dashboardViewModelFactory = DashboardViewModelFactory(dashboardRepository)
@@ -71,6 +76,7 @@ class DashboardFragment : Fragment() {
         dashboardViewModel.dashboardResult.observe(requireActivity(), Observer {
             semesterResults.clear()
             semesterResults.addAll(it.results)
+            pbListLoading.visibility = GONE
             adapter.notifyDataSetChanged()
         })
 

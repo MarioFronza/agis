@@ -53,16 +53,19 @@ class MainActivity : AppCompatActivity() {
         sessionManager.saveAccessToken(sessionResponse.accessToken)
         sessionManager.saveRefreshToken(sessionResponse.refreshToken)
         sessionManager.saveUserId(sessionResponse.userId)
+        Log.i("MainActivity", "Saved sessions attrs")
     }
 
     private fun refreshTokenFail() {
-        Log.i("REFRESH_TOKEN", "Falha ao solicitar refresh token")
+        Log.i("REFRESH_TOKEN", "Error when try to receive new regresh token")
         OneSignal.removeExternalUserId(object : OSExternalUserIdUpdateCompletionHandler {
             override fun onSuccess(results: JSONObject?) {
+                Log.i("REFRESH_TOKEN", "Removed external user id from on signal")
                 signOut()
             }
 
             override fun onFailure(error: OneSignal.ExternalIdError?) {
+                Log.i("REFRESH_TOKEN", "Error when try remove external user id from on signal")
                 signOut()
             }
         })
