@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.RotateAnimation
@@ -76,7 +77,7 @@ class DashboardFragment : Fragment() {
         dashboardViewModel.dashboardResult.observe(requireActivity(), Observer {
             semesterResults.clear()
             semesterResults.addAll(it.results)
-            pbListLoading.visibility = GONE
+            goneLoadingComponents()
             adapter.notifyDataSetChanged()
         })
 
@@ -114,6 +115,7 @@ class DashboardFragment : Fragment() {
     }
 
     private fun getDashboard(firstPeriod: Period) {
+        initLoadingComponents()
         sessionManager.fetchAccessToken()?.let {
             dashboardViewModel.dashboard(it, firstPeriod.year, firstPeriod.term.toString())
         }
@@ -130,6 +132,16 @@ class DashboardFragment : Fragment() {
                 signOut()
             }
         })
+    }
+
+    private fun initLoadingComponents() {
+        pbListLoading.visibility = VISIBLE
+        rvSemesterResults.visibility = GONE
+    }
+
+    private fun goneLoadingComponents() {
+        pbListLoading.visibility = GONE
+        rvSemesterResults.visibility = VISIBLE
     }
 
 
