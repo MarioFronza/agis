@@ -59,7 +59,7 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Query("year") year: String,
         @Query("term") term: String,
-    ): Response<Boolean>
+    ): Response<DashboardInfoResponse>
 
 
 }

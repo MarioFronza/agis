@@ -23,9 +23,22 @@ class RetrieveViewModel(
     val error: LiveData<String>
         get() = _error
 
-    fun retrieve(token: String) {
+    fun retrieve(token: String, year: String, term: String) {
         CoroutineScope(Dispatchers.Main).launch {
-            val response = retrieveRepository.startRetrieve(token)
+            val response = retrieveRepository.startRetrieve(token, year, term)
+            if (response.isSuccessful) {
+                _retrieveResult.value = response.body()
+            } else {
+                val errorMessage =
+                    RequestErrorFormatter.formatErrorBody(response.errorBody()!!.string())
+                _error.value = errorMessage
+            }
+        }
+    }
+
+    fun fullRetrieve(token: String) {
+        CoroutineScope(Dispatchers.Main).launch {
+            val response = retrieveRepository.startFullRetrieve(token)
             if (response.isSuccessful) {
                 _retrieveResult.value = response.body()
             } else {

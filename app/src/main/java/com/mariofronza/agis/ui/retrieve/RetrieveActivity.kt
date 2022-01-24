@@ -2,10 +2,6 @@ package com.mariofronza.agis.ui.retrieve
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -14,8 +10,6 @@ import com.mariofronza.agis.R
 import com.mariofronza.agis.api.ApiService
 import com.mariofronza.agis.data.RetrieveRepository
 import com.mariofronza.agis.ui.MainActivity
-import com.mariofronza.agis.ui.auth.AuthViewModel
-import com.mariofronza.agis.ui.auth.AuthViewModelFactory
 import com.mariofronza.agis.utils.SessionManager
 
 class RetrieveActivity : AppCompatActivity() {
@@ -48,7 +42,7 @@ class RetrieveActivity : AppCompatActivity() {
 
     private fun startRetrieve() {
         sessionManager.fetchAccessToken()?.let {
-            viewModel.retrieve(it)
+            viewModel.fullRetrieve(it)
         }
     }
 

@@ -2,7 +2,7 @@ package com.mariofronza.agis.ui.dashboard
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.opengl.Visibility
+import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,23 +10,24 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.view.animation.Animation
-import android.view.animation.RotateAnimation
-import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import br.com.simplepass.loadingbutton.customViews.CircularProgressButton
 import br.com.simplepass.loadingbutton.customViews.CircularProgressImageButton
 import com.mariofronza.agis.R
 import com.mariofronza.agis.api.ApiService
 import com.mariofronza.agis.data.DashboardRepository
+import com.mariofronza.agis.data.RetrieveRepository
 import com.mariofronza.agis.models.DashboardInfoResponse
 import com.mariofronza.agis.models.Period
 import com.mariofronza.agis.models.SemesterResult
 import com.mariofronza.agis.ui.auth.SignInActivity
+import com.mariofronza.agis.ui.retrieve.RetrieveViewModel
+import com.mariofronza.agis.ui.retrieve.RetrieveViewModelFactory
 import com.mariofronza.agis.ui.semesterresults.SemesterResultsAdapter
 import com.mariofronza.agis.utils.SessionManager
 import com.onesignal.OneSignal
@@ -37,14 +38,20 @@ import org.json.JSONObject
 class DashboardFragment : Fragment() {
 
     private lateinit var sessionManager: SessionManager
+
     private lateinit var rvSemesterResults: RecyclerView
     private lateinit var btnSignOut: CircularProgressImageButton
     private lateinit var powerSpinner: PowerSpinnerView
-    private lateinit var dashboardViewModel: DashboardViewModel
-    private lateinit var dashboardViewModelFactory: DashboardViewModelFactory
+    private lateinit var btnSyncDashboard: CircularProgressButton
     private lateinit var pbListLoading: ProgressBar
 
+    private lateinit var dashboardViewModel: DashboardViewModel
+    private lateinit var retrieveViewModel: RetrieveViewModel
+    private lateinit var dashboardViewModelFactory: DashboardViewModelFactory
+    private lateinit var retrieveViewModelFactory: RetrieveViewModelFactory
+
     private val semesterResults = mutableListOf<SemesterResult>()
+    private lateinit var currentPeriod: Period
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreateView(
@@ -53,18 +60,12 @@ class DashboardFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_dashboard, container, false)
 
-        val api = ApiService()
-        val dashboardRepository = DashboardRepository(api)
-
-        rvSemesterResults = view.findViewById(R.id.rvSemesterResults) as RecyclerView
-        btnSignOut = view.findViewById(R.id.btnSignOut) as CircularProgressImageButton
-        powerSpinner = view.findViewById(R.id.powerSpinner) as PowerSpinnerView
-        pbListLoading = view.findViewById(R.id.pbListLoading) as ProgressBar
-
         sessionManager = SessionManager(requireActivity())
-        dashboardViewModelFactory = DashboardViewModelFactory(dashboardRepository)
-        dashboardViewModel =
-            ViewModelProvider(this, dashboardViewModelFactory).get(DashboardViewModel::class.java)
+        val api = ApiService()
+
+        initUiComponents(view)
+        initDashboardViewModel(api)
+        initRetrieveViewModel(api)
 
         val adapter = SemesterResultsAdapter(semesterResults)
         rvSemesterResults.adapter = adapter
@@ -81,14 +82,31 @@ class DashboardFragment : Fragment() {
             adapter.notifyDataSetChanged()
         })
 
+        retrieveViewModel.retrieveResult.observe(requireActivity(), Observer {
+            pauseRetrieveLoadingComponents()
+            getDashboardInfo()
+        })
+
+        retrieveViewModel.error.observe(requireActivity(), Observer {
+            pauseRetrieveLoadingComponents()
+            toastMessage("Erro ao extrair informações do período ${getCurrentPeriodString()}")
+        })
+
         getDashboardInfo()
 
         powerSpinner.setOnSpinnerItemSelectedListener<String> { oldIndex, oldItem, newIndex, newText ->
             newText.split("/").let {
                 val year = it.first()
                 val term = it.last()
-                getDashboard(Period(year, term.toInt()))
+                currentPeriod = Period(year, term.toInt())
+                getDashboard(currentPeriod)
             }
+        }
+
+
+        btnSyncDashboard.setOnClickListener {
+            btnSyncDashboard.startAnimation()
+            startRetrieve(currentPeriod)
         }
 
         btnSignOut.setOnClickListener {
@@ -97,6 +115,53 @@ class DashboardFragment : Fragment() {
         }
 
         return view
+    }
+
+    private fun startRetrieve(currentPeriod: Period) {
+        initRetrieveLoadingComponents()
+        toastMessage("Extraindo informações do período: ${getCurrentPeriodString()}")
+        sessionManager.fetchAccessToken()?.let {
+            retrieveViewModel.retrieve(it, currentPeriod.year, currentPeriod.term.toString())
+        }
+    }
+
+    private fun getCurrentPeriodString() = "${currentPeriod.year}/${currentPeriod.term}"
+
+    private fun initRetrieveLoadingComponents() {
+        btnSyncDashboard.startAnimation()
+        powerSpinner.isEnabled = false
+    }
+
+    private fun pauseRetrieveLoadingComponents() {
+        powerSpinner.isEnabled = true
+        btnSyncDashboard.revertAnimation()
+    }
+
+    private fun initUiComponents(view: View) {
+        rvSemesterResults = view.findViewById(R.id.rvSemesterResults) as RecyclerView
+        btnSignOut = view.findViewById(R.id.btnSignOut) as CircularProgressImageButton
+        powerSpinner = view.findViewById(R.id.powerSpinner) as PowerSpinnerView
+        pbListLoading = view.findViewById(R.id.pbListLoading) as ProgressBar
+        btnSyncDashboard = view.findViewById(R.id.btnSyncDashboard) as CircularProgressButton
+        btnSyncDashboard.setBackgroundResource(R.drawable.background_button)
+        btnSyncDashboard.spinningBarColor = Color.WHITE
+    }
+
+
+    private fun initDashboardViewModel(api: ApiService) {
+        val dashboardRepository = DashboardRepository(api)
+        dashboardViewModelFactory = DashboardViewModelFactory(dashboardRepository)
+        dashboardViewModel =
+            ViewModelProvider(this, dashboardViewModelFactory).get(DashboardViewModel::class.java)
+    }
+
+
+    private fun initRetrieveViewModel(api: ApiService) {
+        val retrieveRepository = RetrieveRepository(api)
+        retrieveViewModelFactory = RetrieveViewModelFactory(retrieveRepository)
+        retrieveViewModel =
+            ViewModelProvider(this, retrieveViewModelFactory).get(RetrieveViewModel::class.java)
+
     }
 
     @SuppressLint("SetTextI18n")
@@ -135,11 +200,13 @@ class DashboardFragment : Fragment() {
     }
 
     private fun initLoadingComponents() {
+        btnSyncDashboard.isEnabled = false
         pbListLoading.visibility = VISIBLE
         rvSemesterResults.visibility = GONE
     }
 
     private fun goneLoadingComponents() {
+        btnSyncDashboard.isEnabled = true
         pbListLoading.visibility = GONE
         rvSemesterResults.visibility = VISIBLE
     }
@@ -151,6 +218,10 @@ class DashboardFragment : Fragment() {
         Intent(activity, SignInActivity::class.java).also {
             startActivity(it)
         }
+    }
+
+    private fun toastMessage(message: String?) {
+        Toast.makeText(requireActivity(), message, Toast.LENGTH_SHORT).show()
     }
 
 
