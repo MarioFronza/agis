@@ -43,7 +43,7 @@ class AuthViewModel(
         CoroutineScope(Dispatchers.Main).launch {
             val response = sessionRepository.createSession(sessionRequest)
             if (response.isSuccessful) {
-                val externalUserId = _session.value?.userId
+                val externalUserId = response.body()?.userId
                 setOneSignalExternalUserId(externalUserId.toString(), response.body()!!)
             } else {
                 val errorMessage =
@@ -85,11 +85,14 @@ class AuthViewModel(
         OneSignal.setExternalUserId(
             externalUserId,
             object : OSExternalUserIdUpdateCompletionHandler {
+
                 override fun onSuccess(results: JSONObject) {
+                    Log.i("AuthViewModel", "success set externalUserId: $externalUserId")
                     _session.value = body
                 }
 
                 override fun onFailure(error: ExternalIdError) {
+                    Log.i("AuthViewModel", "error when set externalUserId: $externalUserId")
                     OneSignal.onesignalLog(
                         OneSignal.LOG_LEVEL.VERBOSE,
                         "Set external user id done with error: $error"
