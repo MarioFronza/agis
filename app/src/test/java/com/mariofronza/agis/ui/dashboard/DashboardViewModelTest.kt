@@ -58,6 +58,18 @@ class DashboardViewModelTest {
     }
 
     @Test
+    fun server_error_without_json_body_is_reported_as_unavailable() {
+        val viewModel = viewModelWith(object : FakeApiService() {
+            override suspend fun dashboardInfo(token: String): Response<DashboardInfoResponse> =
+                Response.error(502, "<html>Bad Gateway</html>".toResponseBody("text/html".toMediaType()))
+        })
+
+        viewModel.dashboardInfo("token")
+
+        assertEquals("Servidor indisponível, tente novamente mais tarde", viewModel.error.value)
+    }
+
+    @Test
     fun successful_response_is_published() {
         val info = DashboardInfoResponse("Mario", emptyList())
         val viewModel = viewModelWith(object : FakeApiService() {
