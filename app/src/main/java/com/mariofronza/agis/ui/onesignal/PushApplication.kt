@@ -7,9 +7,7 @@ class PushApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-
-        OneSignal.initWithContext(this)
-        OneSignal.setAppId(ONESIGNAL_APP_ID)
+        OneSignal.initWithContext(this, ONESIGNAL_APP_ID)
     }
 
     companion object {

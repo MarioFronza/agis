@@ -143,7 +143,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     }
 
     private fun signOut() {
-        OneSignal.removeExternalUserId()
+        OneSignal.logout()
         sessionManager.clear()
         startActivity(Intent(requireContext(), SignInActivity::class.java))
         requireActivity().finish()
