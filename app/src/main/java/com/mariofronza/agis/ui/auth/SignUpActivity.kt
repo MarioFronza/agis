@@ -1,18 +1,17 @@
 package com.mariofronza.agis.ui.auth
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
-import androidx.lifecycle.Observer
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.mariofronza.agis.R
 import com.mariofronza.agis.api.ApiService
 import com.mariofronza.agis.data.SessionRepository
 import com.mariofronza.agis.models.SessionRequest
-import com.mariofronza.agis.models.SessionResponse
 import com.mariofronza.agis.models.SigaCredential
 import com.mariofronza.agis.models.UserRequest
+import com.mariofronza.agis.ui.ViewModelFactory
 import com.mariofronza.agis.ui.retrieve.RetrieveActivity
 import com.mariofronza.agis.utils.SessionManager
 import kotlinx.android.synthetic.main.activity_sign_up.*
@@ -20,97 +19,46 @@ import kotlinx.android.synthetic.main.activity_sign_up.*
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var sessionManager: SessionManager
-    private lateinit var factory: AuthViewModelFactory
     private lateinit var viewModel: AuthViewModel
-
-    private lateinit var password: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
 
-        val api = ApiService()
-        val sessionRepository = SessionRepository(api)
-
         sessionManager = SessionManager(this)
-        factory = AuthViewModelFactory(sessionRepository)
+        val factory = ViewModelFactory { AuthViewModel(SessionRepository(ApiService())) }
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
 
-
-        viewModel.user.observe(this, Observer {
-            signIn(it.email, password)
-        })
-
-        viewModel.session.observe(this, Observer { sessionResponse ->
-            signInSuccess(sessionResponse)
-        })
-
-
-        viewModel.error.observe(this, Observer { message ->
-            signUpFail(message)
-        })
-
-        tvSignIn.setOnClickListener {
-            goToSignInActivity()
+        viewModel.user.observe(this) { user ->
+            viewModel.signIn(SessionRequest(user.email, etPasswordSignUp.text.toString()))
         }
 
-        btnSignUp.setOnClickListener {
-            validateFields()
+        viewModel.session.observe(this) { session ->
+            sessionManager.save(session)
+            startActivity(Intent(this, RetrieveActivity::class.java))
+            finish()
         }
+
+        viewModel.error.observe(this) { message ->
+            btnSignUp.isEnabled = true
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
+
+        tvSignIn.setOnClickListener { finish() }
+        btnSignUp.setOnClickListener { validateFields() }
     }
-
 
     private fun validateFields() {
         val email = etEmailSignUp.text.toString()
-        password = etPasswordSignUp.text.toString()
+        val password = etPasswordSignUp.text.toString()
         val sigaCpf = etCpfSignUp.text.toString()
         val sigaPassword = etSigaPasswordSignUp.text.toString()
 
-
-        if (email.isEmpty() || email.isEmpty() || password.isBlank() || sigaCpf.isBlank() || sigaPassword.isBlank()) {
+        if (listOf(email, password, sigaCpf, sigaPassword).any(String::isBlank)) {
             Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
         } else {
-            signUp(email, password, sigaCpf, sigaPassword)
-        }
-    }
-
-    private fun signUp(email: String, password: String, sigaCpf: String, sigaPassword: String) {
-        btnSignUp.startAnimation()
-        val userRequest = UserRequest(
-            email = email,
-            password = password,
-            sigaCredential = SigaCredential(
-                cpf = sigaCpf,
-                password = sigaPassword
-            )
-        )
-        viewModel.signUp(userRequest)
-    }
-
-    private fun signIn(email: String, password: String) {
-        val session = SessionRequest(email, password)
-        viewModel.singIn(session)
-    }
-
-    private fun signUpFail(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
-
-
-    private fun signInSuccess(sessionResponse: SessionResponse) {
-        sessionManager.saveAccessToken(sessionResponse.accessToken)
-        sessionManager.saveRefreshToken(sessionResponse.refreshToken)
-        sessionManager.saveUserId(sessionResponse.userId)
-        Intent(this, RetrieveActivity::class.java).also {
-            startActivity(it)
-        }
-        btnSignUp.revertAnimation()
-        finish()
-    }
-
-    private fun goToSignInActivity() {
-        Intent(this, SignInActivity::class.java).also {
-            startActivity(it)
+            btnSignUp.isEnabled = false
+            viewModel.signUp(UserRequest(email = email, password = password, sigaCredential = SigaCredential(sigaCpf, sigaPassword)))
         }
     }
 }

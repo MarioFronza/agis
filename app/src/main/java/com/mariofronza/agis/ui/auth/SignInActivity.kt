@@ -1,89 +1,56 @@
 package com.mariofronza.agis.ui.auth
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
-import androidx.lifecycle.Observer
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.mariofronza.agis.R
 import com.mariofronza.agis.api.ApiService
 import com.mariofronza.agis.data.SessionRepository
 import com.mariofronza.agis.models.SessionRequest
-import com.mariofronza.agis.models.SessionResponse
 import com.mariofronza.agis.ui.MainActivity
+import com.mariofronza.agis.ui.ViewModelFactory
 import com.mariofronza.agis.utils.SessionManager
 import kotlinx.android.synthetic.main.activity_sign_in.*
 
 class SignInActivity : AppCompatActivity() {
 
     private lateinit var sessionManager: SessionManager
-    private lateinit var factory: AuthViewModelFactory
     private lateinit var viewModel: AuthViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in)
 
-        val api = ApiService()
-        val sessionRepository = SessionRepository(api)
-
         sessionManager = SessionManager(this)
-        factory = AuthViewModelFactory(sessionRepository)
+        val factory = ViewModelFactory { AuthViewModel(SessionRepository(ApiService())) }
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
 
-        viewModel.session.observe(this, Observer { sessionResponse ->
-            signInSuccess(sessionResponse)
-        })
-
-        viewModel.error.observe(this, Observer { message ->
-            signInFail(message)
-        })
-
-        btnSignIn.setOnClickListener {
-            validateFields()
+        viewModel.session.observe(this) { session ->
+            sessionManager.save(session)
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
         }
 
-        tvCreateAccount.setOnClickListener {
-            goToSignUpActivity()
+        viewModel.error.observe(this) { message ->
+            btnSignIn.isEnabled = true
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
 
-    }
-
-    private fun goToSignUpActivity() {
-        Intent(this, SignUpActivity::class.java).also {
-            startActivity(it)
-        }
+        btnSignIn.setOnClickListener { validateFields() }
+        tvCreateAccount.setOnClickListener { startActivity(Intent(this, SignUpActivity::class.java)) }
     }
 
     private fun validateFields() {
         val email = etSignInEmail.text.toString()
         val password = etSignInPassword.text.toString()
 
-        if (email.isEmpty() || password.isBlank()) {
+        if (email.isBlank() || password.isBlank()) {
             Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
         } else {
-            signIn(email, password)
+            btnSignIn.isEnabled = false
+            viewModel.signIn(SessionRequest(email, password))
         }
-    }
-
-    private fun signIn(email: String, password: String) {
-        btnSignIn.startAnimation()
-        val session = SessionRequest(email, password)
-        viewModel.singIn(session)
-    }
-
-    private fun signInSuccess(sessionResponse: SessionResponse) {
-        sessionManager.saveAccessToken(sessionResponse.accessToken)
-        sessionManager.saveRefreshToken(sessionResponse.refreshToken)
-        Intent(this, MainActivity::class.java).also {
-            startActivity(it)
-        }
-        btnSignIn.revertAnimation()
-        finish()
-    }
-
-    private fun signInFail(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
