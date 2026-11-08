@@ -28,8 +28,7 @@ class AuthViewModel(
     fun signIn(sessionRequest: SessionRequest) = viewModelScope.launch {
         safeCall { sessionRepository.createSession(sessionRequest) }
             .onSuccess {
-                // Push is best effort: OneSignal may never answer without Play Services.
-                OneSignal.setExternalUserId(it.userId)
+                OneSignal.login(it.userId)
                 _session.value = it
             }
             .onFailure { _error.value = it.message }

@@ -51,7 +51,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.11.0'
 
     implementation 'com.github.skydoves:powerspinner:1.1.9'
-    implementation 'com.onesignal:OneSignal:4.8.12'
+    implementation 'com.onesignal:OneSignal:5.11.0'
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.arch.core:core-testing:2.2.0'

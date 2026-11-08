@@ -44,7 +44,7 @@ class SessionActivity : AppCompatActivity() {
     }
 
     private fun signOut() {
-        OneSignal.removeExternalUserId()
+        OneSignal.logout()
         sessionManager.clear()
         goTo(SignInActivity::class.java)
     }
