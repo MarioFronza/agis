@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mariofronza.agis.api.ApiError
 import com.mariofronza.agis.api.safeCall
 import com.mariofronza.agis.data.SessionRepository
 import com.mariofronza.agis.models.SessionRequest
@@ -31,7 +32,7 @@ class AuthViewModel(
                 OneSignal.login(it.userId)
                 _session.value = it
             }
-            .onFailure { _error.value = it.message }
+            .onFailure { _error.value = if (it is ApiError && it.status == 401) "E-mail ou senha inválidos" else it.message }
     }
 
     fun refreshToken(refreshToken: String) = viewModelScope.launch {
