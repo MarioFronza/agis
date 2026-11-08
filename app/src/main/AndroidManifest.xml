@@ -15,16 +15,16 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name=".ui.auth.SignUpActivity"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".ui.auth.SignInActivity"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".ui.retrieve.RetrieveActivity"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".ui.MainActivity"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".ui.SessionActivity"
             android:exported="true">
