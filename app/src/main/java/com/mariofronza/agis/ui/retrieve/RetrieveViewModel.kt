@@ -3,50 +3,31 @@ package com.mariofronza.agis.ui.retrieve
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.mariofronza.agis.api.safeCall
 import com.mariofronza.agis.data.RetrieveRepository
 import com.mariofronza.agis.models.DashboardInfoResponse
-import com.mariofronza.agis.utils.RequestErrorFormatter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class RetrieveViewModel(
     private val retrieveRepository: RetrieveRepository
 ) : ViewModel() {
 
-    private var _retrieveResult = MutableLiveData<DashboardInfoResponse>()
-    private var _error = MutableLiveData<String>()
+    private val _retrieveResult = MutableLiveData<DashboardInfoResponse>()
+    private val _error = MutableLiveData<String>()
 
-    val retrieveResult: LiveData<DashboardInfoResponse>
-        get() = _retrieveResult
+    val retrieveResult: LiveData<DashboardInfoResponse> = _retrieveResult
+    val error: LiveData<String> = _error
 
-    val error: LiveData<String>
-        get() = _error
-
-    fun retrieve(token: String, year: String, term: String) {
-        CoroutineScope(Dispatchers.Main).launch {
-            val response = retrieveRepository.startRetrieve(token, year, term)
-            if (response.isSuccessful) {
-                _retrieveResult.value = response.body()
-            } else {
-                val errorMessage =
-                    RequestErrorFormatter.formatErrorBody(response.errorBody()!!.string())
-                _error.value = errorMessage
-            }
-        }
+    fun retrieve(token: String, year: String, term: String) = viewModelScope.launch {
+        safeCall { retrieveRepository.startRetrieve(token, year, term) }
+            .onSuccess { _retrieveResult.value = it }
+            .onFailure { _error.value = it.message }
     }
 
-    fun fullRetrieve(token: String) {
-        CoroutineScope(Dispatchers.Main).launch {
-            val response = retrieveRepository.startFullRetrieve(token)
-            if (response.isSuccessful) {
-                _retrieveResult.value = response.body()
-            } else {
-                val errorMessage =
-                    RequestErrorFormatter.formatErrorBody(response.errorBody()!!.string())
-                _error.value = errorMessage
-            }
-        }
+    fun fullRetrieve(token: String) = viewModelScope.launch {
+        safeCall { retrieveRepository.startFullRetrieve(token) }
+            .onSuccess { _retrieveResult.value = it }
+            .onFailure { _error.value = it.message }
     }
-
 }
