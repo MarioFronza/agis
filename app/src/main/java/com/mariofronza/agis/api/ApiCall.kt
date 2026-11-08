@@ -11,13 +11,13 @@ suspend fun <T> safeCall(call: suspend () -> Response<T>): Result<T> = try {
     val response = call()
     val body = response.body()
     if (response.isSuccessful && body != null) Result.success(body)
-    else Result.failure(ApiError(response.code(), errorMessage(response.errorBody()?.string())))
+    else Result.failure(ApiError(response.code(), errorMessage(response.code(), response.errorBody()?.string())))
 } catch (e: IOException) {
     Result.failure(ApiError(null, "Falha de conexão com o servidor"))
 }
 
-private fun errorMessage(errorBody: String?): String = try {
+private fun errorMessage(status: Int, errorBody: String?): String = try {
     JSONObject(errorBody.orEmpty()).getString("message")
 } catch (e: JSONException) {
-    "Erro na requisição"
+    if (status >= 500) "Servidor indisponível, tente novamente mais tarde" else "Erro na requisição"
 }
