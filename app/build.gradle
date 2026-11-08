@@ -10,8 +10,8 @@ android {
         applicationId = "com.mariofronza.agis"
         minSdk = 23
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = (project.findProperty("versionCode") ?: "1") as int
+        versionName = project.findProperty("versionName") ?: "1.0"
 
         buildConfigField "String", "API_URL", "\"${project.findProperty("apiUrl") ?: "http://10.0.2.2:8090"}\""
     }
@@ -21,8 +21,22 @@ android {
         viewBinding = true
     }
 
+    // Release signing comes from the environment so the keystore never lands in the repo.
+    def keystore = System.getenv("SIGNING_KEYSTORE")
+    if (keystore) {
+        signingConfigs {
+            release {
+                storeFile = file(keystore)
+                storePassword = System.getenv("SIGNING_STORE_PASSWORD")
+                keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+                keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (keystore) signingConfig = signingConfigs.release
             minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
