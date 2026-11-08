@@ -37,8 +37,11 @@ class SignUpActivity : AppCompatActivity() {
 
         viewModel.session.observe(this) { session ->
             sessionManager.save(session)
-            startActivity(Intent(this, RetrieveActivity::class.java))
-            finish()
+            // Clear the task so the sign in screen underneath doesn't stay in the back stack.
+            startActivity(
+                Intent(this, RetrieveActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
         }
 
         viewModel.error.observe(this) { message ->
