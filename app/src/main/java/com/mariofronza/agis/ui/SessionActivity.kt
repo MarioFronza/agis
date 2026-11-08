@@ -14,7 +14,6 @@ import com.mariofronza.agis.ui.auth.AuthViewModel
 import com.mariofronza.agis.ui.auth.SignInActivity
 import com.mariofronza.agis.utils.SessionManager
 import com.onesignal.OneSignal
-import org.json.JSONObject
 
 class SessionActivity : AppCompatActivity() {
 
@@ -44,15 +43,8 @@ class SessionActivity : AppCompatActivity() {
             ?: goTo(SignInActivity::class.java)
     }
 
-    // OneSignal callbacks run off the main thread.
     private fun signOut() {
-        OneSignal.removeExternalUserId(object : OneSignal.OSExternalUserIdUpdateCompletionHandler {
-            override fun onSuccess(results: JSONObject?) = runOnUiThread(::clearSession)
-            override fun onFailure(error: OneSignal.ExternalIdError?) = runOnUiThread(::clearSession)
-        })
-    }
-
-    private fun clearSession() {
+        OneSignal.removeExternalUserId()
         sessionManager.clear()
         goTo(SignInActivity::class.java)
     }

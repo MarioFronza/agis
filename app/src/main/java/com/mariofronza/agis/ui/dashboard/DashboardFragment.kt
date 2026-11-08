@@ -25,7 +25,6 @@ import com.mariofronza.agis.ui.retrieve.RetrieveViewModel
 import com.mariofronza.agis.ui.semesterresults.SemesterResultsAdapter
 import com.mariofronza.agis.utils.SessionManager
 import com.onesignal.OneSignal
-import org.json.JSONObject
 
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
@@ -88,8 +87,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         binding.btnSyncDashboard.setOnClickListener { currentPeriod?.let(::startRetrieve) }
 
         binding.btnSignOut.setOnClickListener {
-            binding.btnSignOut.isEnabled = false
-            toast("Aguarde...")
             signOut()
         }
 
@@ -145,15 +142,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         binding.rvSemesterResults.visibility = VISIBLE
     }
 
-    // OneSignal callbacks run off the main thread.
     private fun signOut() {
-        OneSignal.removeExternalUserId(object : OneSignal.OSExternalUserIdUpdateCompletionHandler {
-            override fun onSuccess(results: JSONObject?) = requireActivity().runOnUiThread(::clearSession)
-            override fun onFailure(error: OneSignal.ExternalIdError?) = requireActivity().runOnUiThread(::clearSession)
-        })
-    }
-
-    private fun clearSession() {
+        OneSignal.removeExternalUserId()
         sessionManager.clear()
         startActivity(Intent(requireContext(), SignInActivity::class.java))
         requireActivity().finish()

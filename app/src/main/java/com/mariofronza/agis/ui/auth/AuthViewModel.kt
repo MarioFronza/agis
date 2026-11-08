@@ -1,6 +1,5 @@
 package com.mariofronza.agis.ui.auth
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -12,10 +11,7 @@ import com.mariofronza.agis.models.SessionResponse
 import com.mariofronza.agis.models.User
 import com.mariofronza.agis.models.UserRequest
 import com.onesignal.OneSignal
-import com.onesignal.OneSignal.ExternalIdError
-import com.onesignal.OneSignal.OSExternalUserIdUpdateCompletionHandler
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 
 class AuthViewModel(
     private val sessionRepository: SessionRepository
@@ -31,7 +27,11 @@ class AuthViewModel(
 
     fun signIn(sessionRequest: SessionRequest) = viewModelScope.launch {
         safeCall { sessionRepository.createSession(sessionRequest) }
-            .onSuccess(::linkPushDevice)
+            .onSuccess {
+                // Push is best effort: OneSignal may never answer without Play Services.
+                OneSignal.setExternalUserId(it.userId)
+                _session.value = it
+            }
             .onFailure { _error.value = it.message }
     }
 
@@ -45,20 +45,5 @@ class AuthViewModel(
         safeCall { sessionRepository.createUser(userRequest) }
             .onSuccess { _user.value = it }
             .onFailure { _error.value = it.message }
-    }
-
-    // OneSignal callbacks run off the main thread, hence postValue.
-    // Push is optional: the session is published even when linking fails.
-    private fun linkPushDevice(session: SessionResponse) {
-        OneSignal.setExternalUserId(session.userId, object : OSExternalUserIdUpdateCompletionHandler {
-            override fun onSuccess(results: JSONObject) {
-                _session.postValue(session)
-            }
-
-            override fun onFailure(error: ExternalIdError) {
-                Log.w("AuthViewModel", "OneSignal external id not set: ${error.message}")
-                _session.postValue(session)
-            }
-        })
     }
 }
