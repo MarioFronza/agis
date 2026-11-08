@@ -30,7 +30,7 @@
         app:layout_constraintStart_toEndOf="@+id/tvUserDashboard"
         app:layout_constraintTop_toTopOf="@+id/tvUserDashboard" />
 
-    <br.com.simplepass.loadingbutton.customViews.CircularProgressButton
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnSyncDashboard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -79,7 +79,7 @@
         app:spinner_popup_background="@color/blue_200"
         app:spinner_popup_elevation="14dp" />
 
-    <br.com.simplepass.loadingbutton.customViews.CircularProgressImageButton
+    <ImageButton
         android:id="@+id/btnSignOut"
         android:layout_width="48dp"
         android:layout_height="50dp"
@@ -90,7 +90,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <br.com.simplepass.loadingbutton.customViews.CircularProgressImageButton
+    <ImageButton
         android:id="@+id/btnNotification"
         android:layout_width="48dp"
         android:layout_height="50dp"

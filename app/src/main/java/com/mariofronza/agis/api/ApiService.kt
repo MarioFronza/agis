@@ -1,5 +1,6 @@
 package com.mariofronza.agis.api
 
+import com.mariofronza.agis.BuildConfig
 import com.mariofronza.agis.models.*
 import okhttp3.OkHttpClient
 import retrofit2.Response
@@ -19,7 +20,7 @@ interface ApiService {
                 .build()
 
             return Retrofit.Builder()
-                .baseUrl("http://10.0.2.2:8090")
+                .baseUrl(BuildConfig.API_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(clientSetup)
                 .build()

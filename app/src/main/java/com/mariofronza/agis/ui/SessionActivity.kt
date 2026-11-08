@@ -1,25 +1,22 @@
 package com.mariofronza.agis.ui
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import androidx.lifecycle.Observer
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.mariofronza.agis.R
 import com.mariofronza.agis.api.ApiService
 import com.mariofronza.agis.data.SessionRepository
-import com.mariofronza.agis.models.SessionResponse
 import com.mariofronza.agis.ui.auth.AuthViewModel
-import com.mariofronza.agis.ui.auth.AuthViewModelFactory
 import com.mariofronza.agis.ui.auth.SignInActivity
 import com.mariofronza.agis.utils.SessionManager
 import com.onesignal.OneSignal
 import org.json.JSONObject
 
 class SessionActivity : AppCompatActivity() {
+
     private lateinit var sessionManager: SessionManager
-    private lateinit var factory: AuthViewModelFactory
     private lateinit var viewModel: AuthViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,73 +24,39 @@ class SessionActivity : AppCompatActivity() {
         setContentView(R.layout.activity_session)
 
         sessionManager = SessionManager(this)
-
-        val api = ApiService()
-        val sessionRepository = SessionRepository(api)
-
-        factory = AuthViewModelFactory(sessionRepository)
+        val factory = ViewModelFactory { AuthViewModel(SessionRepository(ApiService())) }
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
 
-        viewModel.session.observe(this, Observer { sessionResponse ->
-            refreshTokenSuccess(sessionResponse)
-        })
-
-        viewModel.error.observe(this, Observer { _ ->
-            refreshTokenFail()
-        })
-    }
-
-    private fun refreshTokenSuccess(sessionResponse: SessionResponse) {
-        sessionManager.saveAccessToken(sessionResponse.accessToken)
-        sessionManager.saveRefreshToken(sessionResponse.refreshToken)
-        sessionManager.saveUserId(sessionResponse.userId)
-        goToMainActivity()
-        Log.i("MainActivity", "Saved sessions attrs")
-    }
-
-    private fun refreshTokenFail() {
-        Log.i("REFRESH_TOKEN", "Error when try to receive new regresh token")
-        OneSignal.removeExternalUserId(object : OneSignal.OSExternalUserIdUpdateCompletionHandler {
-            override fun onSuccess(results: JSONObject?) {
-                Log.i("REFRESH_TOKEN", "Removed external user id from on signal")
-                signOut()
-            }
-
-            override fun onFailure(error: OneSignal.ExternalIdError?) {
-                Log.i("REFRESH_TOKEN", "Error when try remove external user id from on signal")
-                signOut()
-            }
-        })
-    }
-
-    override fun onStart() {
-        super.onStart()
-        val refreshToken = sessionManager.fetchRefreshToken()
-        if (refreshToken == null) {
-            goToSignInActivity()
-        } else {
-            tryRefreshToken(refreshToken)
+        viewModel.session.observe(this) { session ->
+            sessionManager.save(session)
+            goTo(MainActivity::class.java)
         }
+
+        viewModel.error.observe(this) { message ->
+            Log.i("SessionActivity", "Refresh token rejected: $message")
+            signOut()
+        }
+
+        sessionManager.fetchRefreshToken()
+            ?.let(viewModel::refreshToken)
+            ?: goTo(SignInActivity::class.java)
     }
 
-    private fun tryRefreshToken(refreshToken: String) {
-        viewModel.refreshToken(refreshToken)
-    }
-
+    // OneSignal callbacks run off the main thread.
     private fun signOut() {
-        sessionManager.removeTokens()
-        goToSignInActivity()
+        OneSignal.removeExternalUserId(object : OneSignal.OSExternalUserIdUpdateCompletionHandler {
+            override fun onSuccess(results: JSONObject?) = runOnUiThread(::clearSession)
+            override fun onFailure(error: OneSignal.ExternalIdError?) = runOnUiThread(::clearSession)
+        })
     }
 
-    private fun goToMainActivity() {
-        Intent(this, MainActivity::class.java).also {
-            startActivity(it)
-        }
+    private fun clearSession() {
+        sessionManager.clear()
+        goTo(SignInActivity::class.java)
     }
 
-    private fun goToSignInActivity() {
-        Intent(this, SignInActivity::class.java).also {
-            startActivity(it)
-        }
+    private fun goTo(activity: Class<*>) {
+        startActivity(Intent(this, activity))
+        finish()
     }
 }
