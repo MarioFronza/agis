@@ -1,78 +1,50 @@
 package com.mariofronza.agis.ui.semesterresults
 
-import android.content.Context
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.mariofronza.agis.R
+import com.mariofronza.agis.databinding.SubjectInfoItemBinding
 import com.mariofronza.agis.models.SemesterResult
-import kotlinx.android.synthetic.main.subject_info_item.view.*
 
 class SemesterResultsAdapter(
     private val semesterResults: List<SemesterResult>
 ) : RecyclerView.Adapter<SemesterResultsAdapter.SemesterResultsViewHolder>() {
 
-    inner class SemesterResultsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    class SemesterResultsViewHolder(val binding: SubjectInfoItemBinding) : RecyclerView.ViewHolder(binding.root)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SemesterResultsViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(
-            R.layout.subject_info_item,
-            parent,
-            false
-        )
-        return SemesterResultsViewHolder(view)
-    }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = SemesterResultsViewHolder(
+        SubjectInfoItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    )
 
     override fun onBindViewHolder(holder: SemesterResultsViewHolder, position: Int) {
         val semesterResult = semesterResults[position]
+        val context = holder.binding.root.context
+        val statusColor = ColorStateList.valueOf(
+            ContextCompat.getColor(context, STATUS_COLORS[semesterResult.result] ?: R.color.white)
+        )
 
-        holder.itemView.apply {
-            if (position % 2 == 0) {
-                cvSubjectItem.setBackgroundResource(R.color.adapter_blue_light)
-            } else {
-                cvSubjectItem.setBackgroundResource(R.color.adapter_blue_dark)
-            }
-
-            val result = semesterResult.result
-
+        with(holder.binding) {
+            cvSubjectItem.setBackgroundResource(
+                if (position % 2 == 0) R.color.adapter_blue_light else R.color.adapter_blue_dark
+            )
             tvNameSubjectItem.text = semesterResult.subjectName
-
             tvFinalGradeSubjectItem.text = semesterResult.finalGrade.toString()
-            tvFinalGradeSubjectItem.setTextColor(getStatusColorByResult(result, context))
-
-            cpStatusSubjectInfo.text = result
-            cpStatusSubjectInfo.chipBackgroundColor = getStatusColorByResult(result, context)
+            tvFinalGradeSubjectItem.setTextColor(statusColor)
+            cpStatusSubjectInfo.text = semesterResult.result
+            cpStatusSubjectInfo.chipBackgroundColor = statusColor
         }
     }
 
-    override fun getItemCount(): Int {
-        return semesterResults.size
-    }
+    override fun getItemCount() = semesterResults.size
 
-    private fun getStatusColorByResult(result: String, context: Context): ColorStateList {
-        return when (result) {
-            "Aprovado" -> ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    context,
-                    R.color.approved_status
-                )
-            )
-            "Cursando" -> ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    context,
-                    R.color.attending_status
-                )
-            )
-            "Reprovado Nota" -> ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    context,
-                    R.color.reproved_color
-                )
-            )
-            else -> ColorStateList.valueOf(ContextCompat.getColor(context, R.color.white))
-        }
+    companion object {
+        private val STATUS_COLORS = mapOf(
+            "Aprovado" to R.color.approved_status,
+            "Cursando" to R.color.attending_status,
+            "Reprovado Nota" to R.color.reproved_color,
+        )
     }
 }

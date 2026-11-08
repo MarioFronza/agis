@@ -3,34 +3,36 @@ package com.mariofronza.agis.ui.auth
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
-import com.mariofronza.agis.R
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.mariofronza.agis.api.ApiService
 import com.mariofronza.agis.data.SessionRepository
+import com.mariofronza.agis.databinding.ActivitySignUpBinding
 import com.mariofronza.agis.models.SessionRequest
 import com.mariofronza.agis.models.SigaCredential
 import com.mariofronza.agis.models.UserRequest
-import com.mariofronza.agis.ui.ViewModelFactory
 import com.mariofronza.agis.ui.retrieve.RetrieveActivity
 import com.mariofronza.agis.utils.SessionManager
-import kotlinx.android.synthetic.main.activity_sign_up.*
 
 class SignUpActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivitySignUpBinding
     private lateinit var sessionManager: SessionManager
-    private lateinit var viewModel: AuthViewModel
+    private val viewModel: AuthViewModel by viewModels {
+        viewModelFactory { initializer { AuthViewModel(SessionRepository(ApiService())) } }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_sign_up)
+        binding = ActivitySignUpBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         sessionManager = SessionManager(this)
-        val factory = ViewModelFactory { AuthViewModel(SessionRepository(ApiService())) }
-        viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
 
         viewModel.user.observe(this) { user ->
-            viewModel.signIn(SessionRequest(user.email, etPasswordSignUp.text.toString()))
+            viewModel.signIn(SessionRequest(user.email, binding.etPasswordSignUp.text.toString()))
         }
 
         viewModel.session.observe(this) { session ->
@@ -40,24 +42,24 @@ class SignUpActivity : AppCompatActivity() {
         }
 
         viewModel.error.observe(this) { message ->
-            btnSignUp.isEnabled = true
+            binding.btnSignUp.isEnabled = true
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
 
-        tvSignIn.setOnClickListener { finish() }
-        btnSignUp.setOnClickListener { validateFields() }
+        binding.tvSignIn.setOnClickListener { finish() }
+        binding.btnSignUp.setOnClickListener { validateFields() }
     }
 
     private fun validateFields() {
-        val email = etEmailSignUp.text.toString()
-        val password = etPasswordSignUp.text.toString()
-        val sigaCpf = etCpfSignUp.text.toString()
-        val sigaPassword = etSigaPasswordSignUp.text.toString()
+        val email = binding.etEmailSignUp.text.toString()
+        val password = binding.etPasswordSignUp.text.toString()
+        val sigaCpf = binding.etCpfSignUp.text.toString()
+        val sigaPassword = binding.etSigaPasswordSignUp.text.toString()
 
         if (listOf(email, password, sigaCpf, sigaPassword).any(String::isBlank)) {
             Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
         } else {
-            btnSignUp.isEnabled = false
+            binding.btnSignUp.isEnabled = false
             viewModel.signUp(UserRequest(email = email, password = password, sigaCredential = SigaCredential(sigaCpf, sigaPassword)))
         }
     }
