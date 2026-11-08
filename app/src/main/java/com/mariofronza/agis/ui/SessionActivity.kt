@@ -4,7 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
+import androidx.activity.viewModels
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.mariofronza.agis.R
 import com.mariofronza.agis.api.ApiService
 import com.mariofronza.agis.data.SessionRepository
@@ -17,15 +19,15 @@ import org.json.JSONObject
 class SessionActivity : AppCompatActivity() {
 
     private lateinit var sessionManager: SessionManager
-    private lateinit var viewModel: AuthViewModel
+    private val viewModel: AuthViewModel by viewModels {
+        viewModelFactory { initializer { AuthViewModel(SessionRepository(ApiService())) } }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_session)
 
         sessionManager = SessionManager(this)
-        val factory = ViewModelFactory { AuthViewModel(SessionRepository(ApiService())) }
-        viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
 
         viewModel.session.observe(this) { session ->
             sessionManager.save(session)

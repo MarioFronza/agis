@@ -6,11 +6,11 @@ import com.mariofronza.agis.data.DashboardRepository
 import com.mariofronza.agis.models.DashboardInfoResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
-import okhttp3.MediaType
-import okhttp3.ResponseBody
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -26,7 +26,7 @@ class DashboardViewModelTest {
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     @Before
-    fun setUp() = Dispatchers.setMain(TestCoroutineDispatcher())
+    fun setUp() = Dispatchers.setMain(UnconfinedTestDispatcher())
 
     @After
     fun tearDown() = Dispatchers.resetMain()
@@ -49,7 +49,7 @@ class DashboardViewModelTest {
     fun error_body_message_is_reported_as_error() {
         val viewModel = viewModelWith(object : FakeApiService() {
             override suspend fun dashboardInfo(token: String): Response<DashboardInfoResponse> =
-                Response.error(401, ResponseBody.create(MediaType.get("application/json"), """{"message":"Token inválido"}"""))
+                Response.error(401, """{"message":"Token inválido"}""".toResponseBody("application/json".toMediaType()))
         })
 
         viewModel.dashboardInfo("token")
